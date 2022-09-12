@@ -1,16 +1,17 @@
 package com.game.service;
 
-import com.game.dto.PlayerDTO;
 import com.game.entity.Player;
 import com.game.entity.Profession;
 import com.game.entity.Race;
 import com.game.exception_handling.NoSuchIDException;
 import com.game.exception_handling.NoSuchPlayerException;
 import com.game.repository.PlayerRepository;
+import com.game.util.PlayerSpecification;
+import com.game.util.SearchCriteria;
+import com.game.util.SearchOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
 import java.util.*;
 
 @Service
@@ -22,9 +23,7 @@ public class PlayerServiceImpl implements PlayerService {
     @Override
     public Player getPlayer(Long id) {
         Player player = null;
-
-        if (id <= 0 || id % 1 != 0) throw new NoSuchIDException("ID" + id + " is not valid");
-
+        if ( id <= 0 || id % 1 != 0) throw new NoSuchIDException("ID" + id + " is not valid");
         Optional<Player> optional = playerRepository.findById(id);
         if (optional.isPresent()) {
             player = optional.get();
@@ -53,10 +52,8 @@ public class PlayerServiceImpl implements PlayerService {
     public Player enrichPlayer(Player newPlayer) {
         Integer level = ((int) Math.sqrt(200 * newPlayer.getExperience() + 2500) - 50) / 100;
         newPlayer.setLevel(level);
-
         Integer untilNextLevel = 50 * (level + 1) * (level + 2) - newPlayer.getExperience();
         newPlayer.setUntilNextLevel(untilNextLevel);
-
         return newPlayer;
     }
     @Override
@@ -70,61 +67,32 @@ public class PlayerServiceImpl implements PlayerService {
     }
 
 
-    public Player convertToPlayer(PlayerDTO playerDTO) {
-        Player player = new Player();
-        player.setName(playerDTO.getName());
-        player.setBirthday(playerDTO.getBirthday());
-        player.setProfession(playerDTO.getProfession());
-        player.setRace(playerDTO.getRace());
-        player.setTitle(playerDTO.getTitle());
-        player.setExperience(playerDTO.getExperience());
-        player.setBanned(playerDTO.getBanned());
-        return player;
-    }
+    public List<Player> getAllPlayers(String name,
+                                         String title,
+                                         Race race,
+                                         Profession profession,
+                                         Long after,
+                                         Long before,
+                                         Boolean banned,
+                                         Integer minExperience,
+                                         Integer maxExperience,
+                                         Integer minLevel,
+                                         Integer maxLevel,
+                                         Pageable sorted) {
 
-    public List<Player> findAllPlayers(String name,
-                                       String title,
-                                       Race race,
-                                       Profession profession,
-                                       Long after,
-                                       Long before,
-                                       Integer minExperience,
-                                       Integer maxExperience,
-                                       Integer minLevel,
-                                       Integer maxLevel,
-                                       Boolean banned,
-                                       Pageable pageable) {
-
-        String strRace = (race == null) ? "" : race.name();
-        String strProfession = (profession == null) ? "" : profession.name();
-        if (name == null) name = "";
-        if (title == null) title = "";
-        Date dateAfter = (after == null) ? new Date(0L) : new Date(after);
-        Date dateBefore = (before == null) ? new Date() : new Date(before);
-        int minExp = (minExperience == null) ? 0 : minExperience;
-        int maxExp = (maxExperience == null) ? Integer.MAX_VALUE : maxExperience;
-        int minLvl = (minLevel == null) ? 0 : minLevel;
-        int maxLvl = (maxLevel == null) ? Integer.MAX_VALUE : maxLevel;
-        Collection<Boolean> banneds = new ArrayList<>();
-        if (banned == null) {
-            banneds.add(true);
-            banneds.add(false);
-        } else {
-            banneds.add(banned);
-        }
-        return playerRepository.findPlayersByNameContainingAndTitleContainingAndRaceContainingAndProfessionContainingAndBirthdayBetweenAndExperienceBetweenAndLevelBetweenAndBannedInAllIgnoreCase(
-                name,
-                title,
-                strRace,
-                strProfession,
-                dateAfter,
-                dateBefore,
-                minExp,
-                maxExp,
-                minLvl,
-                maxLvl,
-                banneds,
-                pageable);
+        PlayerSpecification spec = new PlayerSpecification();
+        if(!name.equals("")) spec.add(new SearchCriteria("name", name, SearchOperation.MATCH));
+        if(!Objects.equals(title, "")) spec.add(new SearchCriteria("title", title, SearchOperation.MATCH));
+        if(race!=null) spec.add(new SearchCriteria("race", race, SearchOperation.EQUAL));
+        if(profession!=null) spec.add(new SearchCriteria("profession", profession, SearchOperation.EQUAL));
+        if(after!=null) spec.add(new SearchCriteria("birthday", after, SearchOperation.DATE_GREATER_THAN));
+        if(before!=null) spec.add(new SearchCriteria("birthday", before, SearchOperation.DATE_LESS_THAN));
+        if(banned!=null) spec.add(new SearchCriteria("banned", banned, SearchOperation.EQUAL));
+        if(maxLevel!=null) spec.add(new SearchCriteria("level", maxLevel, SearchOperation.LESS_THAN_EQUAL));
+        if(minLevel!=null) spec.add(new SearchCriteria("level", minLevel, SearchOperation.GREATER_THAN_EQUAL));
+        if(minExperience!=null) spec.add(new SearchCriteria("experience", minExperience, SearchOperation.GREATER_THAN_EQUAL));
+        if(maxExperience!=null) spec.add(new SearchCriteria("experience", maxExperience, SearchOperation.LESS_THAN_EQUAL));
+        return playerRepository.findAll(spec, sorted).getContent();
     }
 
     public Long count(String name,
@@ -137,39 +105,19 @@ public class PlayerServiceImpl implements PlayerService {
                       Integer maxExperience,
                       Integer minLevel,
                       Integer maxLevel,
-                      Boolean banned
-    ) {
-        String strRace = (race == null) ? "" : race.name();
-        String strProfession = (profession == null) ? "" : profession.name();
-        if (name == null) name = "";
-        if (title == null) title = "";
-        Date dateAfter = (after == null) ? new Date(0L) : new Date(after);
-        Date dateBefore = (before == null) ? new Date() : new Date(before);
-        int minExp = (minExperience == null) ? 0 : minExperience;
-        int maxExp = (maxExperience == null) ? Integer.MAX_VALUE : maxExperience;
-        int minLvl = (minLevel == null) ? 0 : minLevel;
-        int maxLvl = (maxLevel == null) ? Integer.MAX_VALUE : maxLevel;
-        Collection<Boolean> banneds = new ArrayList<>();
-        if (banned == null) {
-            banneds.add(true);
-            banneds.add(false);
-        } else {
-            banneds.add(banned);
-        }
-
-        return (long) playerRepository.findPlayersByNameContainingAndTitleContainingAndRaceContainingAndProfessionContainingAndBirthdayBetweenAndExperienceBetweenAndLevelBetweenAndBannedInAllIgnoreCase(
-                name,
-                title,
-                strRace,
-                strProfession,
-                dateAfter,
-                dateBefore,
-                minExp,
-                maxExp,
-                minLvl,
-                maxLvl,
-                banneds,
-                Pageable.unpaged()
-        ).size();
+                      Boolean banned) {
+        PlayerSpecification spec = new PlayerSpecification();
+        if(!name.equals("")) spec.add(new SearchCriteria("name", name, SearchOperation.MATCH));
+        if(!Objects.equals(title, "")) spec.add(new SearchCriteria("title", title, SearchOperation.MATCH));
+        if(race!=null) spec.add(new SearchCriteria("race", race, SearchOperation.EQUAL));
+        if(profession!=null) spec.add(new SearchCriteria("profession", profession, SearchOperation.EQUAL));
+        if(after!=null) spec.add(new SearchCriteria("birthday", after, SearchOperation.DATE_GREATER_THAN));
+        if(before!=null) spec.add(new SearchCriteria("birthday", before, SearchOperation.DATE_LESS_THAN));
+        if(banned!=null) spec.add(new SearchCriteria("banned", banned, SearchOperation.EQUAL));
+        if(maxLevel!=null) spec.add(new SearchCriteria("level", maxLevel, SearchOperation.LESS_THAN_EQUAL));
+        if(minLevel!=null) spec.add(new SearchCriteria("level", minLevel, SearchOperation.GREATER_THAN_EQUAL));
+        if(minExperience!=null) spec.add(new SearchCriteria("experience", minExperience, SearchOperation.GREATER_THAN_EQUAL));
+        if(maxExperience!=null) spec.add(new SearchCriteria("experience", maxExperience, SearchOperation.LESS_THAN_EQUAL));
+        return playerRepository.count(spec);
     }
 }

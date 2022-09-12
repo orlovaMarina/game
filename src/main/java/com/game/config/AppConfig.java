@@ -1,5 +1,6 @@
 package com.game.config;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -76,11 +77,23 @@ public class AppConfig {
     public PersistenceExceptionTranslationPostProcessor exceptionTranslation() {
         return new PersistenceExceptionTranslationPostProcessor();
     }
+    @Bean
+    public ModelMapper modelMapper(){
+        return new ModelMapper();
+    }
 
     private Properties additionalProperties() {
         Properties properties = new Properties();
         properties.setProperty("hibernate.dialect", "org.hibernate.dialect.MySQL5Dialect");
-
+        properties.setProperty("hibernate.format_sql", "true");
+        properties.setProperty("hibernate.use_sql_comments", "true");
+        properties.setProperty("hibernate.generate_statistics", "true");
+        properties.setProperty("server.error.include_message", "always");
+        properties.setProperty("server.error.include_binding_errors", "always");
+//then in application.properties add those lines:
+//
+//server.error.include-message=always
+//server.error.include-binding-errors=always
         return properties;
     }
 }

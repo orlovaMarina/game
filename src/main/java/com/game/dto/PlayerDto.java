@@ -1,57 +1,45 @@
-package com.game.entity;
+package com.game.dto;
 
+import com.game.entity.Profession;
+import com.game.entity.Race;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.Date;
 import java.util.Objects;
 
-@Entity
-@Table(name="player")
-public class Player{
+public class PlayerDto{
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="id")
     private Long id;
 
-    @Column(name="name")
     @Size(max=12, message = "Name should not be greater than 12 symbols")
     @NotNull(message = "Name should not be empty")
     private String name;
 
-    @Column(name = "title")
     @Size(max=30, message = "Title should not be greater than 30 letters")
     private String title;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "race")
     private Race race;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "profession")
     private Profession profession;
 
-    @Column(name = "experience")
     private Integer experience;
 
-    @Column(name = "level")
     private Integer level;
 
-    @Column(name = "untilNextLevel")
     private Integer untilNextLevel;
 
-    @Column(name = "birthday")
     private Date birthday;
 
-    @Column(name = "banned")
     private Boolean banned;
 
-    public Player() {
+    public PlayerDto() {
     }
 
-    public Player(String name, String title, Race race, Profession profession, Integer experience
-            , Integer level, Integer untilNextLevel, Date birthday, Boolean banned) {
+    public PlayerDto(String name, String title, Race race, Profession profession, Integer experience, Integer level, Integer untilNextLevel, Date birthday, Boolean banned) {
         this.name = name;
         this.title = title;
         this.race = race;
@@ -61,14 +49,6 @@ public class Player{
         this.untilNextLevel = untilNextLevel;
         this.birthday = birthday;
         this.banned = banned;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public String getName() {
@@ -111,22 +91,6 @@ public class Player{
         this.experience = experience;
     }
 
-    public Integer getLevel() {
-        return level;
-    }
-
-    public void setLevel(Integer level) {
-        this.level = level;
-    }
-
-    public Integer getUntilNextLevel() {
-        return untilNextLevel;
-    }
-
-    public void setUntilNextLevel(Integer untilNextLevel) {
-        this.untilNextLevel = untilNextLevel;
-    }
-
     public Date getBirthday() {
         return birthday;
     }
@@ -143,32 +107,40 @@ public class Player{
         this.banned = banned;
     }
 
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Integer getLevel() {
+        return level;
+    }
+
+    public void setLevel(Integer level) {
+        this.level = level;
+    }
+
+    public Integer getUntilNextLevel() {
+        return untilNextLevel;
+    }
+
+    public void setUntilNextLevel(Integer untilNextLevel) {
+        this.untilNextLevel = untilNextLevel;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Player player = (Player) o;
-        return Objects.equals(id, player.id) && Objects.equals(name, player.name) && Objects.equals(title, player.title) && race == player.race && profession == player.profession && Objects.equals(experience, player.experience) && Objects.equals(level, player.level) && Objects.equals(untilNextLevel, player.untilNextLevel) && Objects.equals(birthday, player.birthday) && Objects.equals(banned, player.banned);
+        PlayerDto playerDto = (PlayerDto) o;
+        return Objects.equals(id, playerDto.id) && Objects.equals(name, playerDto.name) && Objects.equals(title, playerDto.title) && race == playerDto.race && profession == playerDto.profession && Objects.equals(experience, playerDto.experience) && Objects.equals(level, playerDto.level) && Objects.equals(untilNextLevel, playerDto.untilNextLevel) && Objects.equals(birthday, playerDto.birthday) && Objects.equals(banned, playerDto.banned);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(id, name, title, race, profession, experience, level, untilNextLevel, birthday, banned);
-    }
-
-    @Override
-    public String toString() {
-        return "Player{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", title='" + title + '\'' +
-                ", race=" + race +
-                ", profession=" + profession +
-                ", experience=" + experience +
-                ", level=" + level +
-                ", untilNextLevel=" + untilNextLevel +
-                ", birthday=" + birthday +
-                ", banned=" + banned +
-                '}';
     }
 }

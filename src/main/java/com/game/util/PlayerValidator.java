@@ -4,7 +4,6 @@ import com.game.entity.Player;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
-
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -22,13 +21,6 @@ public class PlayerValidator implements Validator {
     @Override
     public void validate(Object target, Errors errors) {
         Player player = (Player) target;
-
-        if(player.getName().length() > 12 || player.getName()==null) {
-            errors.rejectValue("name", "", "Name should not be greater than 12 symbols and not empty");
-        }
-        if(player.getTitle().length() > 30){
-            errors.rejectValue("title", "", "Title should not be greater than 30 letters");
-        }
         if(player.getExperience() < 0 || player.getExperience() > 10_000_000){
             errors.rejectValue("experience", "", "Experience should be between 0 and 10000000");
         }
@@ -36,7 +28,6 @@ public class PlayerValidator implements Validator {
         Date birthday = player.getBirthday();
         SimpleDateFormat f = new SimpleDateFormat("dd-mm-yyyy");
         long milliseconds = 0;
-
         try {
             Date d = f.parse(f.format(birthday));
             milliseconds = d.getTime();
@@ -46,7 +37,6 @@ public class PlayerValidator implements Validator {
         if(milliseconds < 0){
             errors.rejectValue("birthday", "", "Birthday should be a positive Long");
         }
-
         LocalDate birth = player.getBirthday().toInstant()
                 .atZone(ZoneId.systemDefault())
                 .toLocalDate();
